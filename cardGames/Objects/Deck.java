@@ -9,11 +9,11 @@ import java.util.Random;
 
 public class Deck {
 
-    private static final int CARDS_PER_DECK = 52;
+    //private static final int CARDS_PER_DECK = 52;
     private ArrayList<Card> deck;
 
     public Deck() {
-        this.deck = new ArrayList();
+        this.deck = new ArrayList<Card>();
         generateCards();
     }
 
@@ -34,7 +34,7 @@ public class Deck {
 
     public void shuffle() {
         Random rand = new Random();
-        ArrayList<Card> temp = new ArrayList();
+        ArrayList<Card> temp = new ArrayList<Card>();
 
         while (!this.deck.isEmpty()) {
             int select = rand.nextInt(this.deck.size());
@@ -44,8 +44,9 @@ public class Deck {
         this.deck = temp;
     }
 
-    public ArrayList<Card> getDeck() {
-        return (ArrayList<Card>) this.deck.clone();
+    @SuppressWarnings("unchecked")
+	public ArrayList<Card> getDeck() {
+    	return (ArrayList<Card>)this.deck.clone();
     }
     
     public Card drawCard()
