@@ -13,13 +13,13 @@ public class BlackJack implements CardGame {
     private boolean gameOver;
     private boolean playerWon;
     private Hand hands[];
-    
     //Variables to make code easier to read
     private int dealerIndex;
     /*
      * Multiplayer Game (Multiple Players Vs. Dealer) Only end game when all
      * players are done.
      */
+
     public BlackJack(int players) {
         this.deck = new Deck(true);
         this.gameOver = false;
@@ -49,9 +49,9 @@ public class BlackJack implements CardGame {
             // 2 Cards at first draw
             for (int j = 0; j < 2; j++) {
                 hit(i);
-                if (this.hands[i].getValue() == BLACKJACK) {
-                    this.hands[i].state = STATE.BLACKJACK;
-                }
+            }
+            if (this.hands[i].getValue() == BLACKJACK) {
+                this.hands[i].state = STATE.BLACKJACK;
             }
         }
     }
@@ -95,7 +95,7 @@ public class BlackJack implements CardGame {
         //Print out who won Vs. Dealer
         int dealer = this.hands[dealerIndex].getValue();
         System.out.println("\n" + this.hands[dealerIndex]);
-        for (int i = 0; i < this.hands.length; i++) {
+        for (int i = 0; i < dealerIndex; i++) {
             if (this.hands[i].state == STATE.BUST) {
                 if (i == 0) {
                     System.out.println("Player bust... " + this.hands[i]);
@@ -108,8 +108,8 @@ public class BlackJack implements CardGame {
                 } else {
                     System.out.println("Computer " + i + " folded... " + this.hands[i]);
                 }
-            } else if ((this.hands[dealerIndex].state == STATE.BUST 
-                    || this.hands[i].getValue() > dealer ) 
+            } else if ((this.hands[dealerIndex].state == STATE.BUST
+                    || this.hands[i].getValue() > dealer)
                     || this.hands[i].state == STATE.BLACKJACK) {
                 if (i == 0) {
                     System.out.println("Player won! " + this.hands[i]);
@@ -181,9 +181,10 @@ public class BlackJack implements CardGame {
                 && dealer.state != STATE.BUST) {
             dealer.state = hit(index);
         }
-        
-        if(dealer.state == STATE.NORMAL)
+
+        if (dealer.state == STATE.NORMAL) {
             dealer.state = STATE.STAND;
+        }
     }
 
     private STATE hit(int index) {
