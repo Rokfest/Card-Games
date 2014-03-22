@@ -234,8 +234,7 @@ public class BlackJack implements CardGame {
                 if (card.rank.compareTo(Card.RANK.ACE) == 0) {
                     aceFlag++;
                     value += 11;
-                }
-                if (card.rank.getValue() >= 10) {
+                } else if (card.rank.getValue() >= 10) {
 
                     value += 10;
                 } else {
