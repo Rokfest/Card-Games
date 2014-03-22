@@ -8,201 +8,256 @@ import java.util.ArrayList;
 
 public class BlackJack implements CardGame {
 
-	private static final int BLACKJACK = 21;
-	private Deck deck;
-	private boolean gameOver;
-	private boolean playerWon;
-	private Hand hands[];
+    private static final int BLACKJACK = 21;
+    private Deck deck;
+    private boolean gameOver;
+    private boolean playerWon;
+    private Hand hands[];
+    
+    //Variables to make code easier to read
+    private int dealerIndex;
+    /*
+     * Multiplayer Game (Multiple Players Vs. Dealer) Only end game when all
+     * players are done.
+     */
+    public BlackJack(int players) {
+        this.deck = new Deck(true);
+        this.gameOver = false;
+        this.playerWon = false;
 
-	/*
-	 * Multiplayer Game (Multiple Players Vs. Dealer) Only end game when all
-	 * players are done.
-	 */
-	public BlackJack(int players) {
-		this.deck = new Deck(true);
-		this.gameOver = false;
-		this.playerWon = false;
+        // +1 for dealer hand
+        this.hands = new Hand[players + 1];
+        for (int i = 0; i < this.hands.length; i++) {
+            // First hand is Player
+            if (i == 0) {
+                this.hands[i] = new Hand(false);
+            } else {
+                this.hands[i] = new Hand(true);
+            }
+        }
+        this.dealerIndex = this.hands.length - 1;
+        initHands();
+    }
 
-		// +1 for dealer hand
-		this.hands = new Hand[players + 1];
-		for (int i = 0; i < this.hands.length; i++) {
-			// Last hand is always dealer
-			if (i != this.hands.length - 1) {
-				this.hands[i] = new Hand(false);
-			} else {
-				this.hands[i] = new Hand(true);
-			}
-		}
-		initHands();
-	}
+    // Single Player Game (Player Vs. Dealer)
+    public BlackJack() {
+        this(1);
+    }
 
-	// Single Player Game (Player Vs. Dealer)
-	public BlackJack() {
-		this(1);
-	}
+    private void initHands() {
+        for (int i = 0; i < this.hands.length; i++) {
+            // 2 Cards at first draw
+            for (int j = 0; j < 2; j++) {
+                hit(i);
+                if (this.hands[i].getValue() == BLACKJACK) {
+                    this.hands[i].state = STATE.BLACKJACK;
+                }
+            }
+        }
+    }
 
-	private void initHands() {
-		for (Hand player : this.hands) {
-			// 2 Cards at first draw
-			for (int i = 0; i < 2; i++) {
-				player.hand.add(this.deck.drawCard());
-				if (player.getValue() == BLACKJACK) {
-					player.state = STATE.BLACKJACK;
-				}
-			}
-		}
-	}
+    // Interface Methods
+    @Override
+    public boolean isGameOver() {
+        return this.gameOver;
+    }
 
-	// Interface Methods
-	@Override
-	public boolean isGameOver() {
-		return this.gameOver;
-	}
+    @Override
+    public boolean didPlayerWin() {
+        return this.playerWon;
+    }
 
-	@Override
-	public boolean didPlayerWin() {
-		return this.playerWon;
-	}
+    @Override
+    public void run() {
+        // Player Turns are defined here
+        for (int i = 0; i < this.hands.length; i++) {
+            // Keep Player Turn while state is normal
+            while (hands[i].state == STATE.NORMAL) {
+                if (hands[i].auto) {
+                    // Automated Player Code
+                    if (i == dealerIndex) {
+                        // Last Hand = Dealer Code
+                        System.out.println("Dealer Hand: " + this.hands[i]);
+                        dealerPlay(i);
+                    } else {
+                        //Autoplayer Code
+                        System.out.println("Computer " + i + " Hand: " + this.hands[i]);
+                        autoPlay(i);
+                    }
+                } else {
+                    // Player Code
+                    System.out.println("Player Hand: " + this.hands[i]);
+                    hands[i].state = STATE.STAND;
+                }
+            }
+        }
 
-	@Override
-	public void run() {
-		// Player Turns are defined here
-		for (int i = 0; i < this.hands.length; i++) {
-			if (hands[i].auto) {
-				System.out.println("Computer Hand: " + hands[i].toString());
-			} else {
-				System.out.println("Player Hand: " + hands[i].toString());
-			}
-			// Keep Player Turn while state is normal
-			while (hands[i].state == STATE.NORMAL) {
-				if (hands[i].auto) {
-					// Automated Player Code
-					if (i == this.hands.length - 1) {
-						// Last Hand = Dealer Code
-						hands[i].state = STATE.STAND;
-					} else {
-						autoPlay(i);
-						// Auto Player Code
-						hands[i].state = STATE.STAND;
-					}
-				} else {
-					// Player Code
-					hands[i].state = STATE.STAND;
-				}
-			}
-		}
-		System.out.println("Game is not ready");
-		this.playerWon = true;
-		this.gameOver = true;
-	}
+        //Print out who won Vs. Dealer
+        int dealer = this.hands[dealerIndex].getValue();
+        System.out.println("\n" + this.hands[dealerIndex]);
+        for (int i = 0; i < this.hands.length; i++) {
+            if (this.hands[i].state == STATE.BUST) {
+                if (i == 0) {
+                    System.out.println("Player bust... " + this.hands[i]);
+                } else {
+                    System.out.println("Computer " + i + " bust... " + this.hands[i]);
+                }
+            } else if (this.hands[i].state == STATE.FOLD) {
+                if (i == 0) {
+                    System.out.println("Player folded... " + this.hands[i]);
+                } else {
+                    System.out.println("Computer " + i + " folded... " + this.hands[i]);
+                }
+            } else if ((this.hands[dealerIndex].state == STATE.BUST 
+                    || this.hands[i].getValue() > dealer ) 
+                    || this.hands[i].state == STATE.BLACKJACK) {
+                if (i == 0) {
+                    System.out.println("Player won! " + this.hands[i]);
+                } else {
+                    System.out.println("Computer " + i + " won! " + this.hands[i]);
+                }
+            } else if (this.hands[i].getValue() == dealer) {
+                if (i == 0) {
+                    System.out.println("Player tied. " + this.hands[i]);
+                } else {
+                    System.out.println("Computer " + i + " tied. " + this.hands[i]);
+                }
+            } else {
+                if (i == 0) {
+                    System.out.println("Player lost... " + this.hands[i]);
+                } else {
+                    System.out.println("Computer " + i + " lost... " + this.hands[i]);
+                }
+            }
+        }
 
-	private static final int HIGH = 9;
-	private static final int MID = 5;
+        System.out.println("Game is not ready");
+        this.playerWon = true;
+        this.gameOver = true;
+    }
+    private static final int HIGH = 9;
+    private static final int MID = 5;
 
-	private void autoPlay(int index) {
-		Hand current = this.hands[index];
-		Hand dealer = this.hands[this.hands.length - 1];
+    private void autoPlay(int index) {
+        Hand current = this.hands[index];
+        Hand dealer = this.hands[dealerIndex];
 
-		// When dealer shown card is high
-		if (dealer.getValue(true) >= HIGH) {
-			if (current.getValue() >= (HIGH * 2)) {
-				current.state = STATE.STAND;
-			} else {
-				current.state = hit(index);
-			}
-		}
-		// When dealer card is mid
-		else if (dealer.getValue(true) >= MID) {
-			if(current.getValue() >= MID * 3) {
-				current.state = STATE.STAND;
-			} else {
-				current.state = hit(index);
-			}
-		}
-		// When dealer card is low
-		else {
-			if(current.getValue() > HIGH + MID) {
-				current.state = STATE.STAND;
-			}
-			else {
-				current.state = hit(index);
-			}
-		}
-	}
-	
-	private STATE hit(int index) {
-		Hand current = this.hands[index];
-		current.hand.add(this.deck.drawCard());
-		
-		if(current.getValue() > BLACKJACK) {
-			return STATE.BUST;
-		}
-		
-		return STATE.NORMAL;
-	}
+        // When dealer shown card is high
+        if (dealer.getValue(true) >= HIGH) {
+            if (current.getValue() >= (HIGH * 2)) {
+                current.state = STATE.STAND;
+            } else {
+                current.state = hit(index);
+            }
+        } // When dealer card is mid
+        else if (dealer.getValue(true) >= MID) {
+            if (current.getValue() >= MID * 3) {
+                current.state = STATE.STAND;
+            } else {
+                current.state = hit(index);
+            }
+        } // When dealer card is low
+        else {
+            if (current.getValue() > HIGH + MID) {
+                current.state = STATE.STAND;
+            } else {
+                current.state = hit(index);
+            }
+        }
+    }
 
-	// Private Class
-	private enum STATE {
+    private void dealerPlay(int index) {
+        Hand dealer = this.hands[index];
 
-		NORMAL, BLACKJACK, FOLD, STAND, BUST
-	}
+        int max = 0;
 
-	private class Hand {
+        for (int i = 0; i < dealerIndex; i++) {
+            if (this.hands[i].getValue() > max) {
+                max = this.hands[i].getValue();
+            }
+        }
 
-		public ArrayList<Card> hand;
-		public STATE state;
-		// This gives future room for automated players
-		public boolean auto;
+        while ((dealer.getValue() < max && dealer.getValue() <= 17)
+                && dealer.state != STATE.BUST) {
+            dealer.state = hit(index);
+        }
+        
+        if(dealer.state == STATE.NORMAL)
+            dealer.state = STATE.STAND;
+    }
 
-		public Hand(boolean auto) {
-			this.hand = new ArrayList<Card>();
-			this.state = STATE.NORMAL;
+    private STATE hit(int index) {
+        Hand current = this.hands[index];
+        current.hand.add(this.deck.drawCard());
 
-			this.auto = auto;
-		}
+        if (current.getValue() > BLACKJACK) {
+            return STATE.BUST;
+        }
 
-		public int getValue(boolean dealer) {
-			if (!dealer) {
-				return getValue();
-			}
+        return STATE.NORMAL;
+    }
 
-			Hand shownCard = new Hand(true);
-			shownCard.hand.add(this.hand.get(0));
-			return shownCard.getValue();
-		}
+    // Private Class
+    private enum STATE {
 
-		public int getValue() {
-			int value = 0;
-			int aceFlag = 0;
-			for (Card card : this.hand) {
-				if (card.rank.compareTo(Card.RANK.ACE) == 0) {
-					aceFlag++;
-					value += 11;
-				}
-				if (card.rank.getValue() >= 10) {
+        NORMAL, BLACKJACK, FOLD, STAND, BUST
+    }
 
-					value += 10;
-				} else {
-					value += card.rank.getValue();
-				}
-			}
+    private class Hand {
 
-			// Handle Ace && Value over 21 Overflow
-			if (value > BLACKJACK && aceFlag > 0) {
-				for (int i = 0; i < aceFlag; i++) {
-					value -= 10;
-					if (value <= BLACKJACK) {
-						break;
-					}
-				}
-			}
+        public ArrayList<Card> hand;
+        public STATE state;
+        // This gives future room for automated players
+        public boolean auto;
 
-			return value;
-		}
+        public Hand(boolean auto) {
+            this.hand = new ArrayList<Card>();
+            this.state = STATE.NORMAL;
+            this.auto = auto;
+        }
 
-		public String toString() {
-			return this.hand.toString() + " Value: " + getValue() + " State: "
-					+ this.state;
-		}
-	}
+        public int getValue(boolean dealer) {
+            if (!dealer) {
+                return getValue();
+            }
+
+            Hand shownCard = new Hand(true);
+            shownCard.hand.add(this.hand.get(0));
+            return shownCard.getValue();
+        }
+
+        public int getValue() {
+            int value = 0;
+            int aceFlag = 0;
+            for (Card card : this.hand) {
+                if (card.rank.compareTo(Card.RANK.ACE) == 0) {
+                    aceFlag++;
+                    value += 11;
+                }
+                if (card.rank.getValue() >= 10) {
+
+                    value += 10;
+                } else {
+                    value += card.rank.getValue();
+                }
+            }
+
+            // Handle Ace && Value over 21 Overflow
+            if (value > BLACKJACK && aceFlag > 0) {
+                for (int i = 0; i < aceFlag; i++) {
+                    value -= 10;
+                    if (value <= BLACKJACK) {
+                        break;
+                    }
+                }
+            }
+
+            return value;
+        }
+
+        public String toString() {
+            return this.hand.toString() + " Value: " + getValue() + " State: "
+                    + this.state;
+        }
+    }
 }
