@@ -5,6 +5,8 @@ package cardGames.Games;
 
 import cardGames.Objects.*;
 import java.util.ArrayList;
+//Used for Console Input
+import java.util.Scanner;
 
 public class BlackJack implements CardGame {
 
@@ -86,8 +88,9 @@ public class BlackJack implements CardGame {
                     }
                 } else {
                     // Player Code
-                    System.out.println("Player Hand: " + this.hands[i]);
-                    hands[i].state = STATE.STAND;
+                    System.out.println("Dealer Face Up: " + this.hands[dealerIndex].hand.get(0)
+                            + "\nPlayer Hand: " + this.hands[i]);
+                    humanPlay(i);
                 }
             }
         }
@@ -187,6 +190,33 @@ public class BlackJack implements CardGame {
         }
     }
 
+    /* Currently uses Console input for player logic, but can be adapted
+     * for other types on input later when GUI is implemented.
+     */
+    private void humanPlay(int index) {
+        Hand current = this.hands[index];
+        
+        Scanner scan = new Scanner(System.in);
+        char input = 0;
+        while(input == 0) {
+            System.out.print("'H' for Hit, 'S' for Stand, 'F' for Fold: ");
+            input = scan.next().toUpperCase().charAt(0);
+            
+            switch(input) {
+                case 'H':
+                    current.state = hit(index);
+                    break;
+                case 'S':
+                    current.state = STATE.STAND;
+                    break;
+                case 'F':
+                    current.state = STATE.FOLD;
+                    break;
+                default:
+                    input = 0;
+            }
+        }
+    }
     private STATE hit(int index) {
         Hand current = this.hands[index];
         current.hand.add(this.deck.drawCard());
@@ -212,7 +242,7 @@ public class BlackJack implements CardGame {
         public boolean auto;
 
         public Hand(boolean auto) {
-            this.hand = new ArrayList<Card>();
+            this.hand = new ArrayList<>();
             this.state = STATE.NORMAL;
             this.auto = auto;
         }
@@ -255,6 +285,7 @@ public class BlackJack implements CardGame {
             return value;
         }
 
+        @Override
         public String toString() {
             return this.hand.toString() + " Value: " + getValue() + " State: "
                     + this.state;
