@@ -1,17 +1,16 @@
-/*
- * No support for multiple decks yet
- */
 package cardGames.Games;
 
 import cardGames.Objects.*;
 import java.util.ArrayList;
-//Used for Console Input
+import java.util.Random;
+//Used for Console input
 import java.util.Scanner;
 
 public class BlackJack implements CardGame {
 
     private static final int BLACKJACK = 21;
-    private Deck deck;
+    private static final int NUM_OF_DECKS = 3;
+    private Deck deck[];
     private boolean gameOver;
     private boolean playerWon;
     private Hand hands[];
@@ -23,7 +22,7 @@ public class BlackJack implements CardGame {
      */
 
     public BlackJack(int players) {
-        this.deck = new Deck(true);
+        initDecks();
         this.gameOver = false;
         this.playerWon = false;
 
@@ -45,7 +44,14 @@ public class BlackJack implements CardGame {
     public BlackJack() {
         this(1);
     }
-
+    
+    private void initDecks() {
+        this.deck = new Deck[NUM_OF_DECKS];
+        for(int i = 0; i < NUM_OF_DECKS; i++) {
+            this.deck[i] = new Deck(true);
+        }
+    }
+    
     private void initHands() {
         for (int i = 0; i < this.hands.length; i++) {
             // 2 Cards at first draw
@@ -56,6 +62,18 @@ public class BlackJack implements CardGame {
                 this.hands[i].state = STATE.BLACKJACK;
             }
         }
+    }
+    
+    private Card drawCard() {
+        Random rand = new Random();
+        int index = rand.nextInt(NUM_OF_DECKS);
+        
+        //Make sure Deck isn't empty
+        while(this.deck[index].isEmpty()) {
+            index = rand.nextInt();
+        }
+        
+        return this.deck[index].drawCard();
     }
 
     // Interface Methods
@@ -171,16 +189,9 @@ public class BlackJack implements CardGame {
 
     private void dealerPlay(int index) {
         Hand dealer = this.hands[index];
-
-        int max = 0;
-
-        for (int i = 0; i < dealerIndex; i++) {
-            if (this.hands[i].getValue() > max) {
-                max = this.hands[i].getValue();
-            }
-        }
-
-        while ((dealer.getValue() < max && dealer.getValue() <= 17)
+        
+        //Outdo the highest hand value when dealer hand is below or equal to 17
+        while ((dealer.getValue() < 17)
                 && dealer.state != STATE.BUST) {
             dealer.state = hit(index);
         }
@@ -219,7 +230,7 @@ public class BlackJack implements CardGame {
     }
     private STATE hit(int index) {
         Hand current = this.hands[index];
-        current.hand.add(this.deck.drawCard());
+        current.hand.add(drawCard());
 
         if (current.getValue() > BLACKJACK) {
             return STATE.BUST;
