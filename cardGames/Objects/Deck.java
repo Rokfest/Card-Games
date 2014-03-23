@@ -13,7 +13,7 @@ public class Deck {
     private ArrayList<Card> deck;
 
     public Deck() {
-        this.deck = new ArrayList<Card>();
+        this.deck = new ArrayList<>();
         generateCards();
     }
 
@@ -53,8 +53,12 @@ public class Deck {
     {
         if(!deck.isEmpty())
             return this.deck.remove(0);
-        else
-            return null;
+        return null;
+    }
+    
+    public boolean isEmpty()
+    {
+        return this.deck.isEmpty();
     }
 
     public String toString() {
